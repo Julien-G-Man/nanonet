@@ -46,7 +46,7 @@ def plot_loss_curve(loss_history):
     plt.xlabel("step")
     plt.ylabel("loss - cross entropy")
     plt.title("nanonet training curve")
-    plt.savefig("loss.png")
+    plt.savefig("img/text_loss.png")
     plt.grid(True)
     plt.show()
 
@@ -55,10 +55,12 @@ test_texts = [
     "great film",
     "terrible film",
     "not so bad film",
-    "this is a mess"
+    "this is a mess",
+    "tres beau film",
+    "this is non-sensical"
 ]
 
 for text in test_texts:
     print(f"{predict_text(text)} <= '{text}'")
-    
+   
 plot_loss_curve(model.loss_history)

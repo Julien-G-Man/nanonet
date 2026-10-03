@@ -36,10 +36,10 @@ class MLP:
         
     def forward(self, X):
         self.X = X
-        self.h = np.dot(X, self.W1) + self.b1
-        self.a = sigmoid(self.h)
+        self.z = np.dot(X, self.W1) + self.b1
+        self.a = sigmoid(self.z)
         self.logits = np.dot(self.a, self.W2) + self.b2
-        self.probs = softmax(self.logits)
+        self.probs  = softmax(self.logits)
         return self.probs
     
     
@@ -65,7 +65,7 @@ class MLP:
         return cross_entropy(self.probs, y)
     
         
-    def train(self, X, y, epochs: int=5, batch: int =5, lr=1e-3, verbose=True):
+    def train(self, X, y, epochs: int=5, batch: int=5, lr=1e-3, verbose=True):
         for epoch in range(epochs):
             idx = np.random.permutation(len(X))
             X_shuf, y_shuf = X[idx], y[idx]
@@ -76,7 +76,8 @@ class MLP:
                 loss = self.backward(yb, lr=lr)
                 self.loss_history.append(loss)
             if verbose:
-                if epoch % 20 == 0:
+                d = 1/5*epochs if epochs < 10 else 1/10*epochs
+                if epoch % d == 0:
                     print(f"epoch {epoch+1}/{epochs}, loss: {loss:.3f}")
                 
         
@@ -86,9 +87,9 @@ class MLP:
 
         
     def _adam(self, p, g, m, v, lr=1e-3, b1=0.9, b2=0.999):
-        m[:] = (b1 * m) + (1 - b1) * g 
-        v[:] = (b2 * v) + (1 - b2) * (g * g) 
+        m[:]  = (b1 * m) + (1 - b1) * g 
+        v[:]  = (b2 * v) + (1 - b2) * (g * g) 
         m_hat = m / (1 - b1**self.t)
         v_hat = v / (1 - b2**self.t)
-        p -= lr * m_hat / (np.sqrt(v_hat) + 1e-8)
+        p    -= lr * m_hat / (np.sqrt(v_hat) + 1e-8)
         

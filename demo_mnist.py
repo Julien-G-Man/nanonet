@@ -1,4 +1,3 @@
-import numpy as np
 from nanonet import MLP
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_openml
@@ -37,8 +36,8 @@ def plot_loss_curve(loss_history):
     plt.plot(loss_history)
     plt.xlabel("step")
     plt.ylabel("loss - cross entropy")
-    plt.title("nanonet training curve")
-    plt.savefig("loss.png")
+    plt.title("nanonet training curve (MNIST)")
+    plt.savefig("img/mnist_loss.png")
     plt.grid(True)
     plt.show()
 
