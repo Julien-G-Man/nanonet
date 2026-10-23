@@ -12,15 +12,11 @@ class Tensor:
     def __matmul__(self, other):
         """Matrix Multiplication"""
         other = other if isinstance(other, Tensor) else Tensor(other)
-        out   = Tensor(np.dot(self.data, other.data), (self, other), '@')
+        out   = Tensor(self.data * other.data, (self, other), '*')
         
         def _backward():
-            self.grad  += out.grad @ other.data.T
-            # handle batch matmul
-            if other.data.ndim == 2:
-                other.grad += self.data.T @ out.grad
-            else:
-                other.grad += self.data.T
+            self.grad  += unbroadcast(out.grad * other.data, self.data.shape)
+            other.grad  += unbroadcast(out.grad * self.data, other.data.shape)
         
         out._backward = _backward
         return out

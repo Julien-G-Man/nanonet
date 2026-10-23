@@ -31,3 +31,14 @@ def test_sum_backward():
     loss = x.sum()
     loss.backward()
     np.testing.assert_allclose(x.grad, [1.0, 1.0, 1.0])
+    
+
+def test_multiplication_backward():
+    x = Tensor(np.array([2.0, 3.0]))
+    y = Tensor(np.array([4.0, 5.0]))
+    
+    loss:Tensor = (x @ y).sum()
+    loss.backward()
+    np.testing.assert_allclose(x.grad, [4.0, 5.0])
+    np.testing.assert_allclose(y.grad, [2.0, 3.0])
+    
