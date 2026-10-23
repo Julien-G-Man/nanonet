@@ -37,6 +37,17 @@ class Tensor:
         out._backward = _backward
         return out
         
+    
+    def sum(self, axis=None, keepdims=True):
+        out =  Tensor(self.data.sum(axis=axis, keepdims=True), (self,), 'sum')
+        
+        def _backward():
+            grad = out.grad
+            if axis is not None and not keepdims:
+                grad = np.expand_dims(grad, axis)
+            self.grad += np.broadcast_to(grad, self.data.shape)
+        out._backward = _backward
+        return out
         
     def sigmoid(self):
         s   = 1 / (1 + np.exp(-self.data))

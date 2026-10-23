@@ -21,9 +21,13 @@ def test_broadcast_bias_gradient():
         [3.0, 4.0],
         [5.0, 6.0]
     ])
-    result._backward()
     
-    np.testing.assert_allclose(
-        bias.grad,
-        [9.0, 12.0]
-    )
+    result._backward()
+    np.testing.assert_allclose(bias.grad, [9.0, 12.0])
+    
+
+def test_sum_backward():
+    x = Tensor(np.array([2.0, 3.0, 4.0]))
+    loss = x.sum()
+    loss.backward()
+    np.testing.assert_allclose(x.grad, [1.0, 1.0, 1.0])
