@@ -62,11 +62,12 @@ class Tensor:
         out = Tensor(p, (self, ), 'softmax')
         
         def _backward():
-            # if coming from cross entropy, out.grad is already dlogits
-            self.grad += out.grad
+            grad = out.grad
+            self.grad += p * (
+                grad - (grad * p).sum(axis=1, keepdims=True)
+            )
         
         out._backward = _backward
-        out._softmax_data = p
         return out   
             
             

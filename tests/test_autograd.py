@@ -42,3 +42,15 @@ def test_multiplication_backward():
     np.testing.assert_allclose(x.grad, [4.0, 5.0])
     np.testing.assert_allclose(y.grad, [2.0, 3.0])
     
+
+def tesst_softmax_backward():
+    logits = Tensor(np.array([[1.0, 2.0, 3.0]]))
+    probs = logits.softmax()
+    probs.grad = np.array([[1.0, 0.0, 0.0]])    
+    probs._backward()
+    
+    p = probs.data
+    expected = p * (
+        probs.grad - (probs.grad * p).sum(axis=1, keepdims=True)
+    )
+    np.testing.assert_allclose(logits.grad, expected)

@@ -59,23 +59,18 @@ class MLP:
         
 
 def _cross_entropy(probs: Tensor, y: np.ndarray):
-    """
-    probs: Tensor with softmax probs (B, C)
-    y: (B,) int labels
-    return Tensor loss (scalar) that is differentiable
-    """
-    B = probs.data.shape[0]
-    log_p = np.log(probs.data[np.arange(B), y] + 1e-15)
-    loss_data = -log_p.mean()
-    out = Tensor(data=loss_data, _prev=(probs,), _op='ce')
+    batch_size = len(y)
+    rows = np.arange(batch_size)
+    loss_value = -np.log(probs.data[rows, y] + 1e-15).mean()
+    out = Tensor(data=loss_value, _prev=(probs,), _op='cross_entropy')
     
     def _backward():
-        # dL/dprobs -> dL/dlogits fused trick: probs - one_hot
-        dlogits = probs.data.copy()
-        dlogits[np.arange(B), y] -= 1
-        dlogits /= B
-        # chain with out.grad (which is 1
-        probs.grad += dlogits * out.grad
+        grad = np.zeros_like(probs.data)
+        grad[rows, y] = -1.0 / (
+            batch_size * (probs.data[rows, y] + 1e-15)
+        )
+        probs.grad += grad * out.grad
+        
     out._backward = _backward
     return out
 
