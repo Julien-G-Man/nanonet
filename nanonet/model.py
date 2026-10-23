@@ -11,8 +11,8 @@ class MLP:
         self.b1 = Tensor(np.zeros((n_hidden)))
         self.W2 = Tensor(rng.standard_normal((n_hidden, n_out)) * np.sqrt(2 / n_hidden))
         self.b2 = Tensor(np.zeros((n_out)))
-        self.params: list = [self.W1, self.b1, self.W2, self.b2]
-        self.loss_history: list[float] = []
+        self.params:       list[Tensor] = [self.W1, self.b1, self.W2, self.b2]
+        self.loss_history: list[float]  = []
 
         
     def forward(self, X):

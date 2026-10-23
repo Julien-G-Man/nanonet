@@ -31,8 +31,8 @@ class Tensor:
         out   = Tensor(self.data + other.data, (self, other), '+')
         
         def _backward():
-            self.grad  += out.grad
-            other.grad += out.grad.sum(axis=0) if other.grad.shape !=  out.grad.shape else out.grad
+            self.grad  += unbroadcast(out.grad, self.data.shape)
+            other.grad += unbroadcast(out.grad, other.data.shape)
         
         out._backward = _backward
         return out
@@ -79,3 +79,11 @@ class Tensor:
         for v in reversed(topo):
             v._backward()
 
+
+def unbroadcast(grad: Tensor, shape):
+    while grad.ndim >  len(shape):
+        grad = grad.sum(axis=0)
+    for axis, size in enumerate(shape):
+        if size ==1 and grad.shape[axis] != 1:
+            grad = grad.sum(axis=axis, keepdims=True)
+    return grad
