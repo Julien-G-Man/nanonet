@@ -62,10 +62,21 @@ class Tensor:
         
         out._backward = _backward
         return out
+    
+    def __mul__(self, other):
+        other = other if isinstance(other, Tensor) else Tensor(other)
+        out = Tensor(self.data * other.data, (self, other), '*')
+    
+        def _backward():
+            self.grad += unbroadcast(out.grad * other.data, self.data.shape)
+            other.grad += unbroadcast(out.grad * self.data, other.data.shape)
+    
+        out._backward = _backward
+        return out
         
     
     def sum(self, axis=None, keepdims=True):
-        out =  Tensor(self.data.sum(axis=axis, keepdims=True), (self,), 'sum')
+        out =  Tensor(self.data.sum(axis=axis, keepdims=keepdims), (self,), 'sum')
         
         def _backward():
             grad = out.grad

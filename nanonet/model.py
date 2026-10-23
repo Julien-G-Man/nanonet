@@ -6,10 +6,10 @@ from nanonet.optim import Adam
 class MLP:
     """Multi-Layer Perceptron"""
     def __init__(self, n_in: int, n_hidden: int, n_out: int, seed=0):
-        rng = np.random.default_rng(seed)
-        self.W1 = Tensor(rng.standard_normal((n_in, n_hidden)) *  np.sqrt(2 / n_in))
+        self.rng = np.random.default_rng(seed)
+        self.W1 = Tensor(self.rng.standard_normal((n_in, n_hidden)) *  np.sqrt(2 / n_in))
         self.b1 = Tensor(np.zeros((n_hidden)))
-        self.W2 = Tensor(rng.standard_normal((n_hidden, n_out)) * np.sqrt(2 / n_hidden))
+        self.W2 = Tensor(self.rng.standard_normal((n_hidden, n_out)) * np.sqrt(2 / n_hidden))
         self.b2 = Tensor(np.zeros((n_out)))
         self.params:       list[Tensor] = [self.W1, self.b1, self.W2, self.b2]
         self.loss_history: list[float]  = []
@@ -25,9 +25,18 @@ class MLP:
     
         
     def train(self, X, y, epochs: int=5, batch=128, lr=1e-3, verbose=True):
+        if len(X) != len(y):
+            raise ValueError("X and y must contain the same number of samples.")
+        if len(X) == 0:
+            raise ValueError("Training data cannot be empty.")
+        if batch < 1:
+            raise ValueError("batch must be at least 1.")
+        if epochs < 1:
+            raise ValueError("epochs must be at least 1.")
+        
         opt = Adam(self.params, lr=lr)
         for epoch in range(epochs):
-            idx = np.random.permutation(len(X))
+            idx = self.rng.permutation(len(X))
             X_shuf, y_shuf = X[idx], y[idx]
             ep_loss, nb = 0, 0
             
@@ -45,9 +54,9 @@ class MLP:
             self.loss_history.append(avg)
                 
             if verbose:
-                d = 1/5*epochs if epochs < 10 else 1/10*epochs
-                if epoch % d == 0:
-                    print(f"epoch {epoch+1}/{epochs}, loss: {avg:.3f}")
+                interval = max(1, epochs // 5)
+                if epoch % interval == 0 or epochs ==  epochs - 1:
+                    print(f"epoch {epoch+1}/{epochs}, loss: {loss:.3f}")
                     
         return self.loss_history
                     

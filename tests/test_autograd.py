@@ -81,6 +81,19 @@ def test_sum_backward():
     np.testing.assert_allclose(x.grad, [1.0, 1.0, 1.0])
     
 
+def test_sum_axis_withut_keepdims():
+    x = Tensor(np.array([
+        [1.0, 2.0],
+        [3.0, 4.0]
+    ]))
+    result = x.sum(axis=0, keepdims=False)
+    assert result.data.shape == (2,)
+    np.testing.assert_allclose(result.data, [4.0, 6.0])
+    
+    result.sum().backward()
+    np.testing.assert_allclose(x.grad, np.ones((2, 2)))
+    
+
 def test_elementwise_multiplication_backward():
     x = Tensor(np.array([2.0, 3.0]))
     y = Tensor(np.array([4.0, 5.0]))

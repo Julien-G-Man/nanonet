@@ -14,6 +14,9 @@ class Adam:
     def step(self):
         self.t += 1
         for i, p in enumerate(self.params):
+            if p.grad is None:
+                continue
+            
             self.m[i] = self.b1 * self.m[i] + (1 - self.b1) * p.grad
             self.v[i] = self.b2 * self.v[i] + (1 - self.b2) * (p.grad**2)
             # bias correction
@@ -29,5 +32,3 @@ class Adam:
             
 class SGD:
     """Stochastic Gradient Descent"""
-    def __init__(self, data):
-        self.data = data
