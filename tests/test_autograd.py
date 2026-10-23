@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Callable
 from nanonet.autograd import Tensor
 
 def test_addition_backward():
@@ -79,3 +80,32 @@ def test_softmax_backward():
         probs.grad - (probs.grad * p).sum(axis=1, keepdims=True)
     )
     np.testing.assert_allclose(logits.grad, expected)
+  
+  
+def test_multiplication_gradient_check():
+    x = Tensor(np.array([2.0, 3.0]))
+    y = Tensor(np.array([4.0, 5.0]))
+    
+    def loss_fn():
+        return np.sum(x.data * y.data)
+    
+    loss: Tensor = (x @ y).sum()
+    loss.backward()
+    numerical = numerical_gradient(lambda: loss_fn(), x)
+    np.testing.assert_allclose(x.grad, numerical, rtol=1e-5, atol=1e-5)
+    
+        
+def numerical_gradient(fn: Callable, x: Tensor, eps=1e-5):
+    grad = np.zeros_like(x.data)
+    for idx in np.ndindex(x.data.shape):
+        original = x.data[idx]
+        
+        x.data[idx] = original + eps
+        positive = fn()
+        
+        x.data[idx] = original - eps
+        negative = fn()
+        
+        x.data[idx] = original
+        grad[idx] = (positive - negative) / (2 * eps)
+    return grad
