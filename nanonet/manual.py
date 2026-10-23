@@ -57,9 +57,9 @@ class MLP:
         db1 = dh.sum(0)
         
         self.t += 1
-        self._adam(self.W1, dW1, self.mW1, self.vW1)
-        self._adam(self.b1, db1, self.mb1, self.vb1)
-        self._adam(self.W2, dW2, self.mW2, self.vW2)
+        self._adam(self.W1, dW1, self.mW1, self.vW1, lr=lr)
+        self._adam(self.b1, db1, self.mb1, self.vb1, lr=lr)
+        self._adam(self.W2, dW2, self.mW2, self.vW2, lr=lr)
         self._adam(self.b2, db2, self.mb2, self.vb2, lr=lr)
         
         return cross_entropy(self.probs, y)
