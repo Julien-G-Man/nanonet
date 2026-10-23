@@ -66,6 +66,13 @@ class MLP:
     
         
     def train(self, X, y, epochs: int=5, batch: int=5, lr=1e-3, verbose=True):
+        if len(X) != len(y):
+            raise ValueError("X and y must contain the same number of samples.")
+        if batch < 1:
+            raise ValueError("batch must be at least 1.")
+        if epochs < 1:
+            raise ValueError("epochs must be at least 1.")
+        
         for epoch in range(epochs):
             idx = np.random.permutation(len(X))
             X_shuf, y_shuf = X[idx], y[idx]
@@ -76,8 +83,8 @@ class MLP:
                 loss = self.backward(yb, lr=lr)
                 self.loss_history.append(loss)
             if verbose:
-                d = 1/5*epochs if epochs < 10 else 1/10*epochs
-                if epoch % d == 0:
+                interval = max(1, epochs // 5)
+                if epoch % interval == 0 or epochs ==  epochs - 1:
                     print(f"epoch {epoch+1}/{epochs}, loss: {loss:.3f}")
                 
         

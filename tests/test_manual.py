@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from nanonet.manual import MLP
 
@@ -39,9 +40,22 @@ def test_manual_mlp_learns_xor():
     ])
 
     y = np.array([0, 1, 1, 0])
-
     model.train(X, y, epochs=1500, batch=4, lr=0.03, verbose=False)
-
     predictions = model.predict(X)
-
     np.testing.assert_array_equal(predictions, y)
+
+
+def test_training_rejects_mismatched_samples():
+    model = MLP(n_in=2, n_hidden=4, n_out=2)
+    X = np.zeros((4, 2))
+    y = np.array([0, 1, 0])
+    with pytest.raises(ValueError, match="same number of samples"):
+        model.train(X, y)
+
+
+def test_training_rejects_invalid_batch():
+    model = MLP(n_in=2, n_hidden=4, n_out=2)
+    X = np.zeros((4, 2))
+    y = np.array([0, 1, 0, 1])
+    with pytest.raises(ValueError, match="batch"):
+        model.train(X, y, batch=0)
