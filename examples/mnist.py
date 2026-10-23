@@ -1,8 +1,11 @@
-from nanonet import ManualMLP as MLP
+import sys
+from nanonet import MLP
+from pathlib import Path
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 def main():
     X, y = fetch_openml(
@@ -26,7 +29,7 @@ def main():
               | true: {y_test[i]} 
               | {'ok' if predictions[i] == y_test[i] else 'x'}""")
     
-    acc = (model.predict(X_test[:2000]) == y_test[:2000]).mean()
+    acc = (model.predict(X_test) == y_test).mean()
     print(f"\nTest accuracy: {acc*100:.1f}%")
     plot_loss_curve(model.loss_history)
 

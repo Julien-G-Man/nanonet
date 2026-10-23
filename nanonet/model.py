@@ -56,7 +56,7 @@ class MLP:
             if verbose:
                 interval = max(1, epochs // 5)
                 if epoch % interval == 0 or epochs ==  epochs - 1:
-                    print(f"epoch {epoch+1}/{epochs}, loss: {loss:.3f}")
+                    print(f"epoch {epoch + 1}/{epochs}, loss: {avg:.3f}")
                     
         return self.loss_history
                     

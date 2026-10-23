@@ -1,6 +1,10 @@
+import sys
 import numpy as np
-from nanonet import MLP
 import matplotlib.pyplot as plt
+from nanonet import  MLP
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # tiny dataset: same model, text in -> label out
 texts = [
