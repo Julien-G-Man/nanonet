@@ -81,11 +81,22 @@ def test_sum_backward():
     np.testing.assert_allclose(x.grad, [1.0, 1.0, 1.0])
     
 
-def test_multiplication_backward():
+def test_elementwise_multiplication_backward():
+    x = Tensor(np.array([2.0, 3.0]))
+    y = Tensor(np.array([4.0, 5.0]))
+
+    loss = (x * y).sum()
+    loss.backward()
+
+    np.testing.assert_allclose(x.grad, [4.0, 5.0])
+    np.testing.assert_allclose(y.grad, [2.0, 3.0])
+    
+
+def test_vector_dot_product_backward():
     x = Tensor(np.array([2.0, 3.0]))
     y = Tensor(np.array([4.0, 5.0]))
     
-    loss:Tensor = (x @ y).sum()
+    loss = (x @ y).sum()
     loss.backward()
     np.testing.assert_allclose(x.grad, [4.0, 5.0])
     np.testing.assert_allclose(y.grad, [2.0, 3.0])
@@ -101,7 +112,7 @@ def test_matmul_backward():
         [7.0, 8.0]
     ]))
     
-    loss: Tensor = (x @ w).sum()
+    loss = (x @ w).sum()
     loss.backward()
     
     expected_x_grad = np.array([
@@ -114,7 +125,27 @@ def test_matmul_backward():
     ])
     np.testing.assert_allclose(x.grad, expected_x_grad)
     np.testing.assert_allclose(w.grad, expected_w_grad)
-       
+   
+
+def test_matmul_gradient_check():
+    x_data = np.array([[1.0, 2.0], [3.0, 4.0]])
+    w_data = np.array([[2.0, 1.0], [1.0, 3.0]])
+
+    x = Tensor(x_data.copy())
+    w = Tensor(w_data)
+    
+    def loss_fn():
+        return (Tensor(x.data) @ w).sum().data.item()
+
+    loss = (x @ w).sum()
+    loss.backward()
+
+    numerical = numerical_gradient(loss_fn, x)
+
+    np.testing.assert_allclose(
+        x.grad, numerical, rtol=1e-4, atol=1e-5
+    )
+        
 
 def test_softmax_backward():
     logits = Tensor(np.array([[1.0, 2.0, 3.0]]))
@@ -136,7 +167,7 @@ def test_multiplication_gradient_check():
     def loss_fn():
         return np.sum(x.data * y.data)
     
-    loss: Tensor = (x @ y).sum()
+    loss = (x @ y).sum()
     loss.backward()
     numerical = numerical_gradient(lambda: loss_fn(), x)
     np.testing.assert_allclose(x.grad, numerical, rtol=1e-5, atol=1e-5)
@@ -151,7 +182,7 @@ def test_softmax_cross_entropy_gradient():
     ]))
     labels = np.array([2, 0])
     probs = logits.softmax()
-    loss: Tensor = _cross_entropy(probs, labels)
+    loss = _cross_entropy(probs, labels)
     loss.backward()
     
     analytical = logits.grad.copy()
