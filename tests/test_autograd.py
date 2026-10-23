@@ -2,6 +2,53 @@ import numpy as np
 from typing import Callable
 from nanonet.autograd import Tensor
 
+
+def test_mlp_learns_xor():
+    from nanonet.model import MLP
+
+    np.random.seed(42)
+
+    X = np.array([
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1]
+    ], dtype=float)
+
+    y = np.array([0, 1, 1, 0])
+
+    model = MLP(n_in=2, n_hidden=8, n_out=2)
+    model.train(X, y, epochs=1500, batch=4, lr=0.03, verbose=False)
+
+    predictions = model.predict(X)
+    np.testing.assert_array_equal(predictions, y)
+    
+
+def test_adam_updates_parameters():
+    from nanonet.optim import Adam
+
+    parameter = Tensor(np.array([1.0, -2.0]))
+    parameter.grad = np.array([0.5, -0.5])
+    
+    optimizer = Adam([parameter])
+    original = parameter.data.copy()
+    optimizer.step()
+
+    assert not np.array_equal(parameter.data, original)
+    assert np.all(np.isfinite(parameter.data))
+    
+    
+def test_adam_zero_grad():
+    from nanonet.optim import Adam
+
+    parameter = Tensor(np.array([1.0, -2.0]))
+    optimizer = Adam([parameter])
+    parameter.grad = np.array([3.0, 4.0])
+    optimizer.zero_grad()
+
+    np.testing.assert_array_equal(parameter.grad, np.zeros(2))
+    
+    
 def test_addition_backward():
     x = Tensor(np.array([1.0, 2.0]))
     y = Tensor(np.array([3.0, 4.0]))
