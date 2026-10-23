@@ -95,6 +95,33 @@ def test_multiplication_gradient_check():
     np.testing.assert_allclose(x.grad, numerical, rtol=1e-5, atol=1e-5)
     
         
+def test_softmax_cross_entropy_gradient():
+    from nanonet.model import _cross_entropy
+    
+    logits = Tensor(np.array([
+        [0.5, 1.0, 1.5],
+        [1.2, 0.3, 0.8]
+    ]))
+    labels = np.array([2, 0])
+    probs = logits.softmax()
+    loss: Tensor = _cross_entropy(probs, labels)
+    loss.backward()
+    
+    analytical = logits.grad.copy()
+    
+    def loss_fn():
+        x = logits.data
+        max_val = x.max(axis=1, keepdims=True)
+        exp_x = np.exp(x - max_val)
+        probabilities = exp_x / exp_x.sum(axis=1, keepdims=True)
+        return -np.log(
+            probabilities[np.arange(len(labels)), labels]
+        ).mean()
+    
+    numerical = numerical_gradient(loss_fn, logits)
+    np.testing.assert_allclose(analytical, numerical, rtol=1e-5, atol=1e-5)
+    
+    
 def numerical_gradient(fn: Callable, x: Tensor, eps=1e-5):
     grad = np.zeros_like(x.data)
     for idx in np.ndindex(x.data.shape):
@@ -109,3 +136,4 @@ def numerical_gradient(fn: Callable, x: Tensor, eps=1e-5):
         x.data[idx] = original
         grad[idx] = (positive - negative) / (2 * eps)
     return grad
+

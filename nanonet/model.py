@@ -50,14 +50,12 @@ class MLP:
                     print(f"epoch {epoch+1}/{epochs}, loss: {avg:.3f}")
                     
         return self.loss_history
-                
-        
+                    
     def predict(self, X):
         probs = self.forward(X)
         return probs.data.argmax(axis=1)
 
         
-
 def _cross_entropy(probs: Tensor, y: np.ndarray):
     batch_size = len(y)
     rows = np.arange(batch_size)
