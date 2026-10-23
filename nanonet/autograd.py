@@ -12,11 +12,41 @@ class Tensor:
     def __matmul__(self, other):
         """Matrix Multiplication"""
         other = other if isinstance(other, Tensor) else Tensor(other)
-        out   = Tensor(self.data * other.data, (self, other), '*')
+        if self.data.ndim not in (1, 2) or other.data.ndim not in (1, 2):
+            raise ValueError(
+                f"Matrix multiplication currently supports 1D and 2D arrays only "
+                f"{self.data.shape} and {other.data.shape}"
+            )
+        
+        out   = Tensor(self.data @ other.data, (self, other), '@')
         
         def _backward():
-            self.grad  += unbroadcast(out.grad * other.data, self.data.shape)
-            other.grad  += unbroadcast(out.grad * self.data, other.data.shape)
+            grad = out.grad
+            if out.data.ndim == 0:
+                grad = out.grad.item()
+            elif np.asarray(out.grad).size == 1:
+                grad = out.grad.item()
+            else:
+                grad = np.asarray(out.grad).reshape(out.data.shape)
+
+            if self.data.ndim == 1 and other.data.ndim == 1:
+                self.grad += grad * other.data
+                other.grad += grad * self.data
+
+            elif self.data.ndim == 2 and other.data.ndim == 2:
+                self.grad += grad @ other.data.T
+                other.grad += self.data.T @ grad
+
+            elif self.data.ndim == 2 and other.data.ndim == 1:
+                self.grad += np.outer(grad, other.data)
+                other.grad += self.data.T @ grad
+
+            elif self.data.ndim == 1 and other.data.ndim == 2:
+                self.grad += grad @ other.data.T
+                other.grad += np.outer(self.data, grad)
+
+            else:
+                raise ValueError("Unsupported dimensions for matrix multiplication.")
         
         out._backward = _backward
         return out
